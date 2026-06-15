@@ -1,0 +1,7 @@
+make boxes scalabe.
+make on right side of sidebar in main content view a document that expands downwards as elements are dragged onto it.
+make boxes spawn on sidebar.
+make components
+make css property viewer
+embed monaco editor for css (code view) and js
+add runnability
