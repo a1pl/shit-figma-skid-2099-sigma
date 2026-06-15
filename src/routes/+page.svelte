@@ -5,7 +5,7 @@
 <div class="layout">
   <aside class="sidebar"></aside>
   <div class="content">
-    <DraggableBox />
+    <DraggableBox> hi</DraggableBox>
   </div>
 </div>
 
@@ -21,6 +21,8 @@
     width: 240px;
     flex-shrink: 0;
     background: #000;
+    z-index: 67;
+    position: relative;
   }
 
   .content {
