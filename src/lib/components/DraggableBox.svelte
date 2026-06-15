@@ -33,10 +33,16 @@
   $effect(() => {
     xy.set({ x, y });
   });
+
+  let { children }: { children?: import('svelte').Snippet } = $props();
 </script>
 
-<div use:draggable style:transform={`translate(${$xy.x}px, ${$xy.y}px)`} class="draggable">
+{#snippet defaultContent()}
   X: {x} Y: {y}
+{/snippet}
+
+<div use:draggable style:transform={`translate(${$xy.x}px, ${$xy.y}px)`} class="draggable">
+  {@render (children ?? defaultContent)()}
 </div>
 
 <style>
