@@ -5,7 +5,8 @@
 <div class="layout">
   <aside class="sidebar"></aside>
   <div class="content">
-    <DraggableBox> hi</DraggableBox>
+    <DraggableBox> h1</DraggableBox>
+    <DraggableBox> div</DraggableBox>
   </div>
 </div>
 

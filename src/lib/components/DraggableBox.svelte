@@ -9,22 +9,34 @@
     let startX: number;
     let startY: number;
 
-    node.onmousedown = (e) => {
+    const onMouseDown = (e: MouseEvent) => {
       isDragging = true;
       startX = e.clientX;
       startY = e.clientY;
     };
 
-    window.onmouseup = () => {
+    const onMouseUp = () => {
       isDragging = false;
     };
 
-    window.onmousemove = (e) => {
+    const onMouseMove = (e: MouseEvent) => {
       if (isDragging) {
         x += e.clientX - startX;
         y += e.clientY - startY;
         startX = e.clientX;
         startY = e.clientY;
+      }
+    };
+
+    node.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mousemove', onMouseMove);
+
+    return {
+      destroy() {
+        node.removeEventListener('mousedown', onMouseDown);
+        window.removeEventListener('mouseup', onMouseUp);
+        window.removeEventListener('mousemove', onMouseMove);
       }
     };
   }
