@@ -9,3 +9,11 @@
 </svelte:head>
 
 {@render children()}
+
+<style>
+  :global(*, *::before, *::after) {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+</style>
