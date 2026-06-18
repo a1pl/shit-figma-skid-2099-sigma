@@ -1,4 +1,4 @@
 shit figma script 2099 sigma
-powered by [rust](https://rust.facepunch.com)
-i should bleach my hair
-![bleach](https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTAf2Z8bysU_JlAXIrEs35dLB-cUImfXjYINXbB3wPPdVDWCjJb)
+powered by dnd-kit-svelte
+todo.txtcontains things to do 
+!(https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Ftenor.com%2Fsearch%2Fsurprised-guy-gifs&ved=0CBUQjRxqFwoTCNiY7N2dkJUDFQAAAAAdAAAAABBW&opi=89978449)
