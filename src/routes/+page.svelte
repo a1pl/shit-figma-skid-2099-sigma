@@ -1,88 +1,69 @@
 <script lang="ts">
-  import { DragDropProvider, type DragDropEvents } from '@dnd-kit-svelte/svelte';
+  import { droppable, type DragDropState } from '@thisux/sveltednd';
   import DraggableBox from '$lib/components/DraggableBox.svelte';
-  import DropZone from '$lib/components/DropZone.svelte';
 
-  const BOX = 150;
-  const PAD = 16;
-  const GAP = 16;
-  const EMPTY_H = 48;
-  const ZONE_ID = 'zone';
-
-  let layoutEl: HTMLDivElement;
-  let zoneEl: HTMLDivElement;
-  let zoneHeight = $state(EMPTY_H);
+  type Container = 'sidebar' | 'zone';
+  type Box = { id: number; label: string; container: Container };
 
   let nextId = 3;
-  let boxes = $state([
-    { id: 1, label: 'HEY THERE s9423854yu5e9rt8fdgu9', x: 40, y: 80, inZone: false },
-    { id: 2, label: 'div', x: 40, y: 260, inZone: false }
+  let boxes = $state<Box[]>([
+    { id: 1, label: 'HEY THERE s9423854yu5e9rt8fdgu9', container: 'sidebar' },
+    { id: 2, label: 'div', container: 'sidebar' }
   ]);
 
-  function restack() {
-    const zone = zoneEl.getBoundingClientRect();
-    const layout = layoutEl.getBoundingClientRect();
-    const innerLeft = zone.left - layout.left + PAD;
-    const innerTop = zone.top - layout.top + PAD;
-    const usableW = zone.width - PAD * 2;
-    const cols = Math.max(1, Math.floor((usableW + GAP) / (BOX + GAP)));
-
-    const placed = boxes.filter((b) => b.inZone);
-    placed.forEach((b, i) => {
-      b.x = innerLeft + (i % cols) * (BOX + GAP);
-      b.y = innerTop + Math.floor(i / cols) * (BOX + GAP);
-    });
-
-    const rows = Math.ceil(placed.length / cols);
-    zoneHeight = placed.length ? PAD * 2 + rows * BOX + (rows - 1) * GAP : EMPTY_H;
+  // drop on empty
+  function moveTo(target: Container) {
+    return (state: DragDropState<Box>) => {
+      const from = boxes.findIndex((b) => b.id === state.draggedItem.id);
+      if (from === -1) return;
+      const [moved] = boxes.splice(from, 1);
+      moved.container = target;
+      boxes.push(moved);
+    };
   }
 
-  const onDragEnd: DragDropEvents['dragend'] = (event) => {
-    if (event.canceled) return;
-    const { source, target, transform } = event.operation;
-    const b = boxes.find((b) => b.id === source?.id);
-    if (!b) return;
-
-    b.x += transform.x;
-    b.y += transform.y;
-
-    if (target?.id === ZONE_ID) {
-      b.inZone = true;
-      restack();
-    } else if (b.inZone) {
-      b.inZone = false;
-      restack();
-    }
-  };
+  // reordering for dropping onto a box
+  function reorderAt(target: Box) {
+    return (state: DragDropState<Box>) => {
+      if (state.draggedItem.id === target.id) return;
+      const from = boxes.findIndex((b) => b.id === state.draggedItem.id);
+      if (from === -1) return;
+      const [moved] = boxes.splice(from, 1);
+      moved.container = target.container;
+      let to = boxes.findIndex((b) => b.id === target.id);
+      if (state.dropPosition === 'after') to++;
+      boxes.splice(to, 0, moved);
+    };
+  }
 
   function spawn() {
-    boxes.push({
-      id: nextId++,
-      label: 'box ' + (nextId - 1),
-      x: 40,
-      y: 80 + ((boxes.length * 30) % 400),
-      inZone: false
-    });
+    boxes.push({ id: nextId++, label: 'box ' + (nextId - 1), container: 'sidebar' });
   }
 </script>
 
-<DragDropProvider {onDragEnd}>
-  <div class="layout" bind:this={layoutEl}>
-    <aside class="sidebar">
-      <button class="spawn" onclick={spawn}>+ spawn box</button>
-    </aside>
-    <div class="right">
-      <DropZone id={ZONE_ID} height={zoneHeight} bindEl={(el) => (zoneEl = el)} />
-      <div class="content"></div>
-    </div>
-
-    {#each boxes as box (box.id)}
-      <DraggableBox id={box.id} x={box.x} y={box.y}>
-        {box.label}
-      </DraggableBox>
+<div class="layout">
+  <aside
+    class="sidebar"
+    use:droppable={{ container: 'sidebar', callbacks: { onDrop: moveTo('sidebar') } }}
+  >
+    <button class="spawn" onclick={spawn}>+ spawn box</button>
+    {#each boxes.filter((b) => b.container === 'sidebar') as box (box.id)}
+      <DraggableBox {box} direction="vertical" onReorder={reorderAt(box)} />
     {/each}
+  </aside>
+
+  <div class="right">
+    <div
+      class="page"
+      use:droppable={{ container: 'zone', direction: 'grid', callbacks: { onDrop: moveTo('zone') } }}
+    >
+      {#each boxes.filter((b) => b.container === 'zone') as box (box.id)}
+        <DraggableBox {box} direction="grid" onReorder={reorderAt(box)} />
+      {/each}
+    </div>
+    <div class="content"></div>
   </div>
-</DragDropProvider>
+</div>
 
 <style>
   .layout {
@@ -90,7 +71,6 @@
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-    position: relative;
   }
 
   .sidebar {
@@ -99,6 +79,10 @@
     background: #000;
     padding: 16px;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
   }
 
   .spawn {
@@ -110,8 +94,6 @@
     border-radius: 5px;
     cursor: pointer;
     font: inherit;
-    position: relative;
-    z-index: 20;
   }
 
   .right {
@@ -119,6 +101,21 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+  }
+
+  /* page area */
+  .page {
+    width: 100%;
+    flex-shrink: 0;
+    min-height: 48px;
+    background: #88c0d0;
+    border: 1px solid #000;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 16px;
+    padding: 16px;
   }
 
   .content {

@@ -1,33 +1,30 @@
 <script lang="ts">
-  import { useDraggable } from '@dnd-kit-svelte/svelte';
+  import { draggable, droppable, type DragDropState } from '@thisux/sveltednd';
+
+  type Box = { id: number; label: string; container: 'sidebar' | 'zone' };
 
   let {
-    id,
-    x = 0,
-    y = 0,
-    children
+    box,
+    direction = 'grid',
+    onReorder
   }: {
-    id: string | number;
-    x?: number;
-    y?: number;
-    children?: import('svelte').Snippet;
+    box: Box;
+    direction?: 'vertical' | 'horizontal' | 'grid';
+    onReorder: (state: DragDropState<Box>) => void;
   } = $props();
-
-  const { ref, isDragging } = useDraggable({ id: () => id });
 </script>
 
 <div
-  {@attach ref}
+  use:draggable={{ container: box.container, dragData: box }}
+  use:droppable={{ container: String(box.id), direction, callbacks: { onDrop: onReorder } }}
   class="draggable"
-  class:dragging={isDragging.current}
-  style:left={x + 'px'}
-  style:top={y + 'px'}
 >
-  {@render children?.()}
+  {box.label}
 </div>
 
 <style>
   .draggable {
+    position: relative;
     background: #d97706;
     color: white;
     width: 150px;
@@ -36,15 +33,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
+    padding: 8px;
+    box-sizing: border-box;
     cursor: grab;
     user-select: none;
-    position: absolute;
-    z-index: 10;
-    touch-action: none;
   }
 
-  .draggable.dragging {
+  .draggable:active {
     cursor: grabbing;
-    z-index: 100;
   }
 </style>
