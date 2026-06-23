@@ -43,4 +43,13 @@
   .draggable:active {
     cursor: grabbing;
   }
+
+  /* remove edge lines */
+  .draggable:global(.drop-before)::before,
+  .draggable:global(.drop-after)::after,
+  .draggable:global(.drop-left)::before,
+  .draggable:global(.drop-right)::after {
+    display: none !important;
+    content: none !important;
+  }
 </style>

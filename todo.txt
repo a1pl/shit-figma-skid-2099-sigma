@@ -7,3 +7,5 @@ embed monaco editor for css (code view) and js
 add runnability
 make sidebar scrollable
 make boxes placeable in any order
+
+add a dotted line placeholder for where boxes will be placed
